@@ -24,7 +24,7 @@ set_framerate_limit(window, 60)
 event = Event()
 
 # simulation object for the robot
-robotSim = Robot(; prop = 2.0, vmax = 1., maxforce=1.0)
+robotSim = Robot(; d = 0.2, I = 0.05, prop = 2.0, vmax = 1., maxforce = 1.0)
 
 # shape for the robot
 robotRect = RectangleShape()
@@ -37,11 +37,34 @@ set_fillcolor(robotRect, SFML.cyan)
 sl = 0.
 sr = 0.
 
+# reset the state of the robot
 function reset()
     global sl, sr
     sl = 0.; sr = 0.;
     robotSim.state = RobotState((0., 0.), (0., 0.), 0., 0.)
 end
+
+# generate the parrot distance signal, with some noise
+noiseFactor = 0.1
+function parrotSignal(dt)
+
+    parrotPosView = pixel2coords(window, get_mousepos(window))
+    parrotPos = (Float64(parrotPosView.x), -Float64(parrotPosView.y))
+    distRaw = norm(robotSim.state.x - parrotPos)
+    distRaw += noiseFactor * randn()
+
+    return distRaw
+end
+
+# robot's reaction to the parrot signal
+function parrotSignalResponse(distanceNoisy)
+    
+    println("distance measured: ", distanceNoisy)
+end
+
+# create the pipeline
+_ = map(parrotSignal, fps(2))
+_ = map(parrotSignalResponse, _)
 
 robotSim.wheelSigFunc = dt -> (sl, sr)
 
@@ -73,6 +96,9 @@ function main_loop(dt)
             elseif get_key(event).key_code == KeyCode.S
                 sl -= 0.05
                 sr -= 0.05
+            elseif get_key(event).key_code == KeyCode.SPACE
+                sl = 0.
+                sr = 0.
             end
         end
     end

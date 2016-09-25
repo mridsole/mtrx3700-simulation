@@ -72,7 +72,7 @@ type Robot
     end
 end
 
-t(rs::RobotState) = Vec2(-sin(θ), cos(θ))
+t(beep boop) = Vec2(-sin(θ), cos(θ))
 n(rs::RobotState) = Vec2(cos(θ), sin(θ))
 
 function tick(robot::Robot, dt::Float64)
@@ -84,9 +84,9 @@ function tick(robot::Robot, dt::Float64)
 
     # proportional control to find out how much force to apply
     wheelForce = (
-        robot.prop * (robot.vmax * wheelSig[1] - 
+        robot.prop * (robot.vmax * wheelSig[1] -
         (dot(et, robot.state.v) - robot.d * robot.state.ω)),
-        robot.prop * (robot.vmax * wheelSig[2] - 
+        robot.prop * (robot.vmax * wheelSig[2] -
         (dot(et, robot.state.v) + robot.d * robot.state.ω))
     )
 
@@ -101,11 +101,11 @@ function tick(robot::Robot, dt::Float64)
         # compute the velocities of the wheels (either side)
         vL = norm(robot.state.v) - robot.d * robot.state.ω
         vR = norm(robot.state.v) + robot.d * robot.state.ω
-        
+
         # need to apply friction at the wheels
         FL = 0. #robot.friction * vL
         FR = 0. #robot.friction * vL
-    
+
         # compute new ω and θ
         ω = robot.state.ω + dt * robot.d * (wheelForce[2] - FR -
             (wheelForce[1] - FL)) / robot.I
