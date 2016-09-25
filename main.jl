@@ -3,17 +3,19 @@ using Reactive
 include("robot.jl")
 
 # redirect standard output to a terminal of choice
-println("Enter redirect device: ")
+println("Enter redirect device (type n for no redirect): ")
 tty_name = STDIN |> readline |> chomp
-tty = open(tty_name, "w")
-redirect_stdout(tty)
-redirect_stderr(tty)
+if tty_name != "n"
+    tty = open(tty_name, "w")
+    redirect_stdout(tty)
+    redirect_stderr(tty)
 
-# flush every now and then
-@async begin
-    while true
-        sleep(0.2)
-        flush(tty)
+    # flush every now and then
+    @async begin
+        while true
+            sleep(0.2)
+            flush(tty)
+        end
     end
 end
 
@@ -34,6 +36,12 @@ set_fillcolor(robotRect, SFML.cyan)
 # left and right targets
 sl = 0.
 sr = 0.
+
+function reset()
+    global sl, sr
+    sl = 0.; sr = 0.;
+    robotSim.state = RobotState((0., 0.), (0., 0.), 0., 0.)
+end
 
 robotSim.wheelSigFunc = dt -> (sl, sr)
 
